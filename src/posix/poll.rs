@@ -26,16 +26,7 @@ fn wait_fd(fd: RawFd, events: PollFlags, timeout: Duration) -> io::Result<()> {
 
     let milliseconds =
         timeout.as_secs() as i64 * 1000 + i64::from(timeout.subsec_nanos()) / 1_000_000;
-    #[cfg(target_os = "linux")]
-    let wait_res = {
-        let timespec = TimeSpec::milliseconds(milliseconds);
-        nix::poll::ppoll(
-            slice::from_mut(&mut fd),
-            Some(timespec),
-            Some(SigSet::empty()),
-        )
-    };
-    #[cfg(not(target_os = "linux"))]
+
     let wait_res = nix::poll::poll(slice::from_mut(&mut fd), milliseconds as nix::libc::c_int);
 
     let wait = match wait_res {
